@@ -6,13 +6,12 @@ var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 var clamp=function(n,a,b){return Math.max(a,Math.min(b,n))};
 
 /* ---------- Settings (override in config.js) ---------- */
-var CFG={wishesDb:'',wishesNode:'aleena-sudheesh/wishes',music:'music/bgm.mp3',musicStart:'24',musicVolume:'0.5'};
+var CFG={wishesDb:'',wishesNode:'aleena-sudheesh/wishes',music:'music/bgm.mp3',musicVolume:'0.5'};
 var user=window.WEDDING_CONFIG||{};
 Object.keys(CFG).forEach(function(k){if(typeof user[k]==='string')CFG[k]=user[k]});
 if(!/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebasedatabase\.app|firebaseio\.com)$/i.test(CFG.wishesDb))CFG.wishesDb='';
 if(!/^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*$/.test(CFG.wishesNode))CFG.wishesNode='aleena-sudheesh/wishes';
 if(!/^[A-Za-z0-9._\/-]+$/.test(CFG.music)||/\.\./.test(CFG.music)||/^\//.test(CFG.music))CFG.music='music/bgm.mp3';
-var MSTART=parseFloat(CFG.musicStart);if(!(MSTART>=0&&MSTART<3600))MSTART=0;
 var MVOL=parseFloat(CFG.musicVolume);if(!(MVOL>=.05&&MVOL<=1))MVOL=.5;
 
 var EVENTS={
@@ -48,7 +47,8 @@ function garland(box){
   box.textContent='';
   var W=box.clientWidth||innerWidth,H=box.clientHeight||100;
   var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H,'aria-hidden':'true'},box);
-  var sag=Math.min(34,H*.36),y0=8;
+  var plain=box.getAttribute('data-garland')==='plain';        /* plain = one clean flower string, no hanging strands */
+  var sag=plain?16:Math.min(34,H*.36),y0=plain?10:8;
   var Y=function(t){return y0+4*sag*t*(1-t)};
   el('path',{d:'M0 '+y0+' Q '+(W/2)+' '+(y0+2*sag)+' '+W+' '+y0,fill:'none',stroke:'#2f6a3f','stroke-width':1.8},svg);
   var n=Math.max(10,Math.round(W/21));
@@ -60,7 +60,7 @@ function garland(box){
     el('ellipse',{cx:9,cy:3,rx:6,ry:2.6,fill:'#3b7a4a',transform:'rotate(25 9 3)'},sw);
     flower(el('g',{},sw),i%2);
   }
-  var m=Math.max(4,Math.round(W/78));
+  var m=plain?0:Math.max(4,Math.round(W/78));
   for(var k=0;k<m;k++){
     var tt=(k+.5)/m,sx=tt*W,sy=Y(tt),len=26+((k*37)%34);
     var st=el('g',{transform:'translate('+sx+' '+sy+')'},svg),sg=el('g',{},st);
@@ -127,60 +127,29 @@ function openGate(){
 $('#open').addEventListener('click',openGate);
 $('#open').focus({preventScroll:true});
 
-/* ---------- Music: starts softly from 0:24 when the doors open (file lives in the repo's music folder) ---------- */
+/* ---------- Music: starts when the doors open. The soft fade-in and fade-out are built into music/bgm.mp3 itself,
+   so it starts gently on every browser, including iPhone Safari (which does not allow volume changes from a page). ---------- */
 function setPlaying(on){tape.classList.toggle('playing',on);tape.setAttribute('aria-pressed',on?'true':'false')}
-var fadeTimer=0,ending=false,wantPlay=false,srcTry=0,SRCS=[CFG.music],ctxA=null,gainN=null,useGain=false,curVol=0;
+var wantPlay=false,srcTry=0,SRCS=[CFG.music];
 if(CFG.music.indexOf('/')>-1)SRCS.push(CFG.music.split('/').pop());   /* also look next to index.html, in case the folder was flattened */
-/* iPhone and iPad Safari ignore audio.volume, so on those the soft fade is done with Web Audio instead */
-function initGain(){
-  if(ctxA)return;
-  try{
-    audio.volume=.5;
-    if(Math.abs(audio.volume-.5)<.01){audio.volume=0;return}          /* volume works normally */
-    var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-    ctxA=new AC();var src=ctxA.createMediaElementSource(audio);gainN=ctxA.createGain();gainN.gain.value=0;
-    src.connect(gainN);gainN.connect(ctxA.destination);useGain=true;
-  }catch(e){useGain=false}
-}
-function wake(){try{if(ctxA&&ctxA.state==='suspended')ctxA.resume()}catch(e){}}
-function setVol(v){curVol=v;if(useGain&&gainN){try{gainN.gain.value=v}catch(e){}}else{try{audio.volume=v}catch(e){}}}
-function fadeTo(v,ms){
-  clearInterval(fadeTimer);
-  var from=curVol,t0=Date.now();
-  fadeTimer=setInterval(function(){
-    var k=Math.min(1,(Date.now()-t0)/ms);
-    setVol(from+(v-from)*k);
-    if(k>=1)clearInterval(fadeTimer);
-  },100);
-}
 function startMusic(){
   if(!audio)return;
   wantPlay=true;
-  initGain();wake();setVol(0);
-  /* jump to the chosen start point (right away if the file is ready, otherwise as soon as it is) */
-  if(audio.readyState>=1){try{audio.currentTime=MSTART}catch(e){}}
-  else audio.addEventListener('loadedmetadata',function(){try{audio.currentTime=MSTART}catch(e){}},{once:true});
-  var pr=audio.play();     /* called inside the tap; begins as soon as the file has loaded */
-  if(pr&&pr.then)pr.then(function(){tape.classList.add('show');setPlaying(true);fadeTo(MVOL,6000)}).catch(function(){});
+  try{audio.volume=MVOL}catch(e){}
+  try{audio.currentTime=0}catch(e){}
+  var pr=audio.play();     /* called inside the tap, so the browser allows it */
+  if(pr&&pr.then)pr.then(function(){tape.classList.add('show');setPlaying(true)}).catch(function(){});
 }
 try{
-  audio=new Audio();audio.loop=false;audio.preload='metadata';audio.src=CFG.music;
+  audio=new Audio();audio.loop=true;audio.preload='metadata';audio.src=CFG.music;
   audio.addEventListener('loadedmetadata',function(){tape.classList.add('show')});
   audio.addEventListener('error',function(){
     if(srcTry+1<SRCS.length){srcTry++;audio.src=SRCS[srcTry];audio.load();if(wantPlay)startMusic();return}
     tape.classList.remove('show');setPlaying(false);
     if(window.console)console.warn('Music file not found. Keep the music folder next to index.html (music/bgm.mp3).');
   });
-  /* ease out near the end, then come back in softly from the chosen start point */
-  audio.addEventListener('timeupdate',function(){
-    if(audio.duration&&audio.duration-audio.currentTime<3&&!ending){ending=true;fadeTo(0,2600)}
-  });
-  audio.addEventListener('ended',function(){
-    ending=false;try{audio.currentTime=MSTART}catch(e){}setVol(0);wake();
-    audio.play().then(function(){fadeTo(MVOL,4000)}).catch(function(){});
-  });
   tape.addEventListener('click',function(){
-    if(audio.paused){initGain();wake();setVol(0);audio.play().then(function(){setPlaying(true);fadeTo(MVOL,1500)}).catch(function(){})}
+    if(audio.paused){try{audio.volume=MVOL}catch(e){}audio.play().then(function(){setPlaying(true)}).catch(function(){})}
     else{audio.pause();setPlaying(false)}
   });
 }catch(e){}

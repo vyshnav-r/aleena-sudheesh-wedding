@@ -90,7 +90,7 @@ h2.title.in::after{scale:1 1}h2.title.in::before{scale:1}
 .gate.open .door.l{transform:rotateY(-112deg)}
 .gate.open .door.r{transform:rotateY(112deg)}
 .gate-lintel{position:absolute;left:0;right:0;top:0;height:18px;z-index:4;background:linear-gradient(to bottom,var(--gold) 0 3px,transparent 3px 6px,var(--gold) 6px 12px,transparent 12px 15px,var(--gold) 15px 18px),var(--wine-d)}
-.gate-garland{position:absolute;left:0;right:0;top:18px;height:96px;z-index:5;pointer-events:none}
+.gate-garland{position:absolute;left:0;right:0;top:18px;height:60px;z-index:5;pointer-events:none}
 .gate-card{position:absolute;left:50%;top:52%;translate:-50% -50%;width:min(84vw,380px);text-align:center;padding:34px 22px 30px;background:var(--paper);border:1px solid var(--gold);outline:1px solid var(--gold);outline-offset:6px;border-radius:6px;box-shadow:0 22px 60px rgba(0,0,0,.55);z-index:6;transition:opacity .5s,scale .7s}
 .gate.open .gate-card{opacity:0;scale:.9;pointer-events:none}
 .gate-card .top{color:var(--mute);font-size:.95rem}
@@ -368,7 +368,7 @@ h2.title.in::after{scale:1 1}h2.title.in::before{scale:1}
 <div class="gate" id="gate" role="dialog" aria-label="Wedding invitation. Open the doors to continue.">
   <div class="door l"><i></i></div><div class="door r"><i></i></div>
   <div class="gate-lintel"></div>
-  <div class="gate-garland" data-garland="strands"></div>
+  <div class="gate-garland" data-garland="plain"></div>
   <div class="gate-card">
     <svg class="rings gate-rings" viewBox="0 0 200 110" aria-hidden="true">
       <circle class="rg l" cx="72" cy="60" r="34"/><circle class="rg r" cx="128" cy="60" r="34"/>
