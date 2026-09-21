@@ -6,12 +6,11 @@ var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 var clamp=function(n,a,b){return Math.max(a,Math.min(b,n))};
 
 /* ---------- Settings (override in config.js) ---------- */
-var CFG={wishesDb:'',wishesNode:'aleena-sudheesh/wishes',music:'music/bgm.mp3',musicVolume:'0.5'};
+var CFG={wishesDb:'',wishesNode:'aleena-sudheesh/wishes',musicVolume:'0.5'};
 var user=window.WEDDING_CONFIG||{};
 Object.keys(CFG).forEach(function(k){if(typeof user[k]==='string')CFG[k]=user[k]});
 if(!/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebasedatabase\.app|firebaseio\.com)$/i.test(CFG.wishesDb))CFG.wishesDb='';
 if(!/^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*$/.test(CFG.wishesNode))CFG.wishesNode='aleena-sudheesh/wishes';
-if(!/^[A-Za-z0-9._\/-]+$/.test(CFG.music)||/\.\./.test(CFG.music)||/^\//.test(CFG.music))CFG.music='music/bgm.mp3';
 var MVOL=parseFloat(CFG.musicVolume);if(!(MVOL>=.05&&MVOL<=1))MVOL=.5;
 
 var EVENTS={
@@ -84,16 +83,19 @@ $$('[data-mandala]').forEach(mandala);
 buildGarlands();
 (function(){var w=innerWidth,t;addEventListener('resize',function(){clearTimeout(t);t=setTimeout(function(){if(Math.abs(innerWidth-w)>40){w=innerWidth;buildGarlands()}},250)})})();
 
-/* ---------- Falling petals ---------- */
+/* ---------- Falling petals (they fall the full height of the first screen, even when it is tall on a phone) ---------- */
 (function(){
-  var box=$('#petals');if(!box||reduce)return;
-  var types=['j','j','m','r','j','m'];
-  for(var i=0;i<20;i++){
+  var box=$('#petals'),hero=$('#hero');if(!box||!hero||reduce)return;
+  function fall(){box.style.setProperty('--fall',(hero.offsetHeight+60)+'px')}
+  fall();addEventListener('resize',fall);addEventListener('load',fall);
+  var H=Math.max(hero.offsetHeight,700),types=['j','j','m','r','j','m'];
+  for(var i=0;i<24;i++){
     var p=document.createElement('i');p.className='petal '+types[i%types.length];
+    var speed=55+Math.random()*50,dur=(H+60)/speed;              /* pixels per second, so the pace looks the same on any height */
     p.style.setProperty('--x',(Math.random()*100)+'%');
     p.style.setProperty('--s',(7+Math.random()*9)+'px');
-    p.style.setProperty('--dur',(9+Math.random()*9)+'s');
-    p.style.setProperty('--del',(-Math.random()*16)+'s');
+    p.style.setProperty('--dur',dur+'s');
+    p.style.setProperty('--del',(-Math.random()*dur)+'s');
     p.style.setProperty('--dx',((Math.random()*180)-90)+'px');
     box.appendChild(p);
   }
@@ -127,30 +129,62 @@ function openGate(){
 $('#open').addEventListener('click',openGate);
 $('#open').focus({preventScroll:true});
 
-/* ---------- Music: starts when the doors open. The soft fade-in and fade-out are built into music/bgm.mp3 itself,
-   so it starts gently on every browser, including iPhone Safari (which does not allow volume changes from a page). ---------- */
+/* ---------- Music: starts when the doors open ----------
+   Main file: music/bgm-soft-25s.mp3 already begins at 0:25 of the song with a soft fade-in and fade-out built in,
+   so it starts gently from the right place on every device (iPhone Safari cannot change volume or jump around).
+   Safety net: if that file is missing, music/bgm.mp3 (the full song) is used instead, jumping to 0:25 and fading in from the page. */
 function setPlaying(on){tape.classList.toggle('playing',on);tape.setAttribute('aria-pressed',on?'true':'false')}
-var wantPlay=false,srcTry=0,SRCS=[CFG.music];
-if(CFG.music.indexOf('/')>-1)SRCS.push(CFG.music.split('/').pop());   /* also look next to index.html, in case the folder was flattened */
+var START_AT=25,CB='?v=5',wantPlay=false,srcTry=0,fadeTimer=0,ending=false;
+var SRCS=[{u:'music/bgm-soft-25s.mp3',full:false},{u:'bgm-soft-25s.mp3',full:false},{u:'music/bgm.mp3',full:true},{u:'bgm.mp3',full:true}];
+function isFull(){return SRCS[srcTry].full}
+function fadeTo(v,ms){
+  clearInterval(fadeTimer);
+  var from=audio.volume,t0=Date.now();
+  fadeTimer=setInterval(function(){
+    var k=Math.min(1,(Date.now()-t0)/ms);
+    try{audio.volume=from+(v-from)*k}catch(e){}
+    if(k>=1)clearInterval(fadeTimer);
+  },100);
+}
 function startMusic(){
   if(!audio)return;
   wantPlay=true;
-  try{audio.volume=MVOL}catch(e){}
-  try{audio.currentTime=0}catch(e){}
-  var pr=audio.play();     /* called inside the tap, so the browser allows it */
-  if(pr&&pr.then)pr.then(function(){tape.classList.add('show');setPlaying(true)}).catch(function(){});
+  if(isFull()){                       /* safety net: full song, so start at 0:25 and fade in from the page */
+    audio.loop=false;
+    try{audio.volume=0}catch(e){}
+    if(audio.readyState>=1){try{audio.currentTime=START_AT}catch(e){}}
+    else audio.addEventListener('loadedmetadata',function(){try{audio.currentTime=START_AT}catch(e){}},{once:true});
+    audio.addEventListener('playing',function(){try{if(audio.currentTime<START_AT-1)audio.currentTime=START_AT}catch(e){}},{once:true});
+  }else{                              /* main file: the fades are inside the audio */
+    audio.loop=true;
+    try{audio.volume=MVOL}catch(e){}
+    try{audio.currentTime=0}catch(e){}
+  }
+  var pr=audio.play();                /* called inside the tap, so the browser allows it */
+  if(pr&&pr.then)pr.then(function(){tape.classList.add('show');setPlaying(true);if(isFull())fadeTo(MVOL,6000)}).catch(function(){});
 }
 try{
-  audio=new Audio();audio.loop=true;audio.preload='metadata';audio.src=CFG.music;
+  audio=new Audio();audio.loop=true;audio.preload='metadata';audio.src=SRCS[0].u+CB;
   audio.addEventListener('loadedmetadata',function(){tape.classList.add('show')});
   audio.addEventListener('error',function(){
-    if(srcTry+1<SRCS.length){srcTry++;audio.src=SRCS[srcTry];audio.load();if(wantPlay)startMusic();return}
+    if(srcTry+1<SRCS.length){srcTry++;audio.src=SRCS[srcTry].u+CB;audio.load();if(wantPlay)startMusic();return}
     tape.classList.remove('show');setPlaying(false);
-    if(window.console)console.warn('Music file not found. Keep the music folder next to index.html (music/bgm.mp3).');
+    if(window.console)console.warn('Music file not found. Keep the music folder next to index.html.');
+  });
+  /* full-song safety net only: ease out near the end, then come back in softly from 0:25 */
+  audio.addEventListener('timeupdate',function(){
+    if(isFull()&&audio.duration&&audio.duration-audio.currentTime<3&&!ending){ending=true;fadeTo(0,2600)}
+  });
+  audio.addEventListener('ended',function(){
+    if(!isFull())return;
+    ending=false;try{audio.currentTime=START_AT;audio.volume=0}catch(e){}
+    audio.play().then(function(){fadeTo(MVOL,4000)}).catch(function(){});
   });
   tape.addEventListener('click',function(){
-    if(audio.paused){try{audio.volume=MVOL}catch(e){}audio.play().then(function(){setPlaying(true)}).catch(function(){})}
-    else{audio.pause();setPlaying(false)}
+    if(audio.paused){
+      try{audio.volume=isFull()?0:MVOL}catch(e){}
+      audio.play().then(function(){setPlaying(true);if(isFull())fadeTo(MVOL,1500)}).catch(function(){})
+    }else{audio.pause();setPlaying(false)}
   });
 }catch(e){}
 
