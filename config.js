@@ -11,6 +11,6 @@ window.WEDDING_CONFIG = {
 
   // Background music kept in this repo (music folder). It starts as soon as a guest opens the doors.
   music: 'music/bgm.mp3',
-  musicStart: '24',     // start the song from this many seconds (24 = 0:24)
+  musicStart: '24.5',     // start the song from this many seconds (24 = 0:24)
   musicVolume: '0.5'    // 0.1 (very soft) to 1 (full). It fades in gently to this level.
 };
