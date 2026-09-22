@@ -14,9 +14,9 @@ if(!/^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*$/.test(CFG.wishesNode))CFG.wishesNode='a
 var MVOL=parseFloat(CFG.musicVolume);if(!(MVOL>=.05&&MVOL<=1))MVOL=.5;
 
 var EVENTS={
-  mv:{title:'Madhuramveppu, Aleena & Sudheesh',start:'20261019T133000Z',end:'20261019T160000Z',loc:'Palathingal House, Ondayangadi, Manathavady, Wayanad'},
-  wd:{title:'Wedding, Aleena & Sudheesh',start:'20261020T063000Z',end:'20261020T083000Z',loc:'Immaculate Conception Church, Manathavady, Wayanad'},
-  rc:{title:'Wedding Reception, Aleena & Sudheesh',start:'20261021T053000Z',end:'20261021T093000Z',loc:"St. Patrick's Higher Secondary School, Manathavady, Wayanad",desc:'Dress code: Black and gold'}
+  mv:{title:'Madhuramveppu, Aleena & Sudheesh',start:'20261019T133000Z',end:'20261019T160000Z',loc:'Palathingal House, Ondayangadi, Mananthavady, Wayanad'},
+  wd:{title:'Wedding, Aleena & Sudheesh',start:'20261020T063000Z',end:'20261020T083000Z',loc:'Immaculate Conception Church, Mananthavady, Wayanad'},
+  rc:{title:'Wedding Reception, Aleena & Sudheesh',start:'20261021T123000Z',end:'20261021T163000Z',loc:"St. Patrick's Higher Secondary School, Mananthavady, Wayanad",desc:'Dress code: Black and gold'}
 };
 
 /* ---------- Line drawing: measure each line and use its real length (does not rely on SVG pathLength, which Safari handles unevenly) ---------- */
@@ -248,7 +248,7 @@ function put(id,v,frac){
 }
 function tick(){
   var d=target-Date.now();
-  if(d<=0){put('d','00',0);put('h','00',0);put('m','00',0);put('s','00',0);$('#cd-note').textContent='The celebrations have begun';return}
+  if(d<=0){put('d','00',0);put('h','00',0);put('m','00',0);put('s','00',0);var note=$('#cd-note');if(note)note.textContent='The celebrations have begun';return}
   var s=Math.floor(d/1000),days=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),sec=s%60;
   put('d',pad(days),days/30);put('h',pad(h),h/24);put('m',pad(m),m/60);put('s',pad(sec),sec/60);
 }
@@ -397,7 +397,7 @@ var LINKISH=/https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|in|io|me|ly|xyz|co|inf
     hasMore=false;
     var L=localLoad().reverse().map(function(w){return [w&&w.k,w]});
     if(demo){
-      var S=[['Anitha & Roy','Wishing you a lifetime of love, laughter and good food. Cannot wait to celebrate with you both!'],['The Palathingal family','God bless you both. Two families, one big happy celebration.'],['Meera','Aleena, your voice on the radio made my mornings. Now go make your own happily ever after!'],['Rahul','Congratulations Doc! May every film night and every long journey be a good one.'],['The Manathavady gang','Cannot wait for Madhuramveppu. See you in Wayanad!']];
+      var S=[['Anitha & Roy','Wishing you a lifetime of love, laughter and good food. Cannot wait to celebrate with you both!'],['The Palathingal family','God bless you both. Two families, one big happy celebration.'],['Meera','Aleena, your voice on the radio made my mornings. Now go make your own happily ever after!'],['Rahul','Congratulations Doc! May every film night and every long journey be a good one.'],['The Mananthavady gang','Cannot wait for Madhuramveppu. See you in Wayanad!']];
       L=L.concat(S.map(function(s,i){return ['demoKey'+i+'abcdef',{name:s[0],msg:s[1]}]}));
     }
     addNotes(L,false,false);status();
