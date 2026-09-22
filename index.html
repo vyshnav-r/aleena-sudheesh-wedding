@@ -90,6 +90,7 @@ h2.title.in::after{scale:1 1}h2.title.in::before{scale:1}
 .gate.open .door.l{transform:rotateY(-112deg)}
 .gate.open .door.r{transform:rotateY(112deg)}
 .gate-lintel{position:absolute;left:0;right:0;top:0;height:18px;z-index:4;background:linear-gradient(to bottom,var(--gold) 0 3px,transparent 3px 6px,var(--gold) 6px 12px,transparent 12px 15px,var(--gold) 15px 18px),var(--wine-d)}
+[data-garland] svg{overflow:visible}
 .gate-garland{position:absolute;left:0;right:0;top:18px;height:60px;z-index:5;pointer-events:none;transition:opacity .3s}
 .gate.open .gate-garland{opacity:0}
 .gate-card{position:absolute;left:50%;top:52%;translate:-50% -50%;width:min(84vw,380px);text-align:center;padding:34px 22px 30px;background:var(--paper);border:1px solid var(--gold);outline:1px solid var(--gold);outline-offset:6px;border-radius:6px;box-shadow:0 22px 60px rgba(0,0,0,.55);z-index:6;transition:opacity .5s,scale .7s}
@@ -264,7 +265,7 @@ h2.title.in::after{scale:1 1}h2.title.in::before{scale:1}
 
 /* ===== RSVP ===== */
 .rsvp{background:var(--blush);color:var(--wine);overflow:hidden}
-.rsvp-garland{position:absolute;left:0;right:0;top:0;height:100px;pointer-events:none}
+.rsvp-garland{position:absolute;left:0;right:0;top:0;height:150px;pointer-events:none}
 .chai{position:relative;width:min(72vw,300px);margin:34px auto 0;aspect-ratio:3/4;border-radius:999px 999px 14px 14px;overflow:hidden;border:3px solid var(--gold);box-shadow:0 0 0 7px var(--blush),0 0 0 8.5px var(--gold),0 22px 40px rgba(75,15,32,.25);animation:bob 5s ease-in-out infinite alternate;background:var(--wine-d)}
 .chai img{width:100%;height:100%;object-fit:cover;object-position:50% 24%;animation:kb 16s ease-in-out infinite alternate}
 .toast{min-height:1.4em;font-size:.95rem;color:var(--palm);font-weight:500}
@@ -617,8 +618,8 @@ h2.title.in::after{scale:1 1}h2.title.in::before{scale:1}
 
 <!-- SEE YOU THERE -->
 <section class="sec rsvp" id="together">
-  <div class="rsvp-garland" data-garland="plain"></div>
-  <div class="wrap center" style="padding-top:26px">
+  <div class="rsvp-garland" data-garland="strands"></div>
+  <div class="wrap center" style="padding-top:46px">
     <h2 class="title">See you in Wayanad</h2>
     <div class="chai"><img src="images/closing/tea.jpg" loading="lazy" decoding="async" alt="Aleena and Sudheesh sharing a cup of tea beside a stone pillar of a Kerala tharavad"></div>
     <p class="script join">we can&rsquo;t wait to celebrate with you</p>
