@@ -306,7 +306,7 @@ var LINKISH=/https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|in|io|me|ly|xyz|co|inf
   }
   function status(){
     stat.hidden=false;
-    stat.textContent=loaded?loaded+(loaded===1?' wish so far':' wishes so far'):'Be the first to leave a wish.';
+    stat.textContent=loaded?'Thank you for your wishes':'Be the first to leave a wish.';
     more.hidden=!hasMore;
   }
   function addNotes(pairs,prepend,isNew){
